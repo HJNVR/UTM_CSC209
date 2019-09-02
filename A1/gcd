@@ -1,0 +1,18 @@
+cat "$@" | tr -cs 0-9 '\012' | (
+
+    x=0
+
+    while read y
+    do
+        while test $y -ne 0
+        do
+            t=$x
+            x=$y
+            y=`expr $t % $y`
+        done
+    done
+
+    echo $x
+
+)
+

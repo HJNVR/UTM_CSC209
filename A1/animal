@@ -1,0 +1,55 @@
+yesno() {
+    line=not_a_match
+    while test "$line" != y -a "$line" != yes -a "$line" != n -a "$line" != no
+    do
+        read line || exit 0
+    done
+    test "$line" = y -o "$line" = yes
+}
+
+if test $# -ne 1
+then
+    echo usage: $0 db >&2
+    exit 1
+fi
+
+set -e
+cd "$1"
+
+echo Think of an animal.
+while test -d yes
+do
+    cat question
+    if yesno
+    then
+        cd yes
+    else
+        cd no
+    fi
+done
+echo Is your animal a `cat name`\?
+if yesno
+then
+    echo I got it!
+else
+    echo Aw, I lose. \ What animal were you thinking of\?
+    # Don't make any changes until we've received all user input data,
+    #   so as to keep the database valid in case of eof in the middle of
+    #   the interaction
+    read name || exit 0
+    echo Tell me a question which would distinguish a `cat name` from a "$name".
+    read question || exit 0
+    echo What would be the answer for a "$name?"
+    if yesno
+    then
+        mkdir yes no
+        echo "$name" >yes/name
+        mv name no/name
+    else
+        mkdir yes no
+        echo "$name" >no/name
+        mv name yes/name
+    fi
+    echo "$question" >question
+    echo I\'ll remember that.
+fi
